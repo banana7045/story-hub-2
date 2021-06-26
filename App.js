@@ -1,56 +1,126 @@
+  
 import React from 'react';
-import { StyleSheet, Text, View, Image } from 'react-native';
-import {createAppContainer} from 'react-navigation';
-import {createBottomTabNavigator} from 'react-navigation-tabs' 
-import WriteStoryScreen from './screens/WriteStoryScreen'
-import ReadStoryScreen from './screens/ReadStoryScreen'
-
-export default class App extends React.Component {
-  render(){
-    return(
-      <AppContainer />
-    );
-  }
-}
-
-const TabNavigator = createBottomTabNavigator({
-  WriteStory: WriteStoryScreen,
-  ReadStory: ReadStoryScreen
-},
-{
-  defaultNavigationOptions: ({navigation})=>({
-    tabBarIcon: ()=>{
-      const routeName = navigation.state.routeName;
-      console.log(routeName)
-      if(routeName === "WriteStory"){
-        return(
-          <Image
-          source={require("./assets/write.png")}
-          style={{width:40, height:40}}
-        />
-        )
-        
-      }
-      else if(routeName === "ReadStory"){
-        return(
-          <Image
-          source={require("./assets/read.png")}
-          style={{width:40, height:40}}
-        />)
-        
-      }
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { TextInput } from 'react-native-gesture-handler';
+import {Header} from 'react-native-elements';
+import db from '../config'
+import firebase from 'firebase'
+ 
+export default class WriteStoryScreen extends React.Component {
+    constructor(props){
+        super(props);
+        this.state = {
+            title: '',
+            author: '',
+            storyText: '',
+        }
     }
-  })
-}
-  )
 
-const AppContainer = createAppContainer(TabNavigator);
+    submitStory = ()=>{
+      console.log(db.collection("stories"))
+        db.collection("stories").add({
+            title: this.state.title,
+            author: this.state.author,
+            storyText: this.state.storyText,
+            //date: firebase.firestore.FieldValue.serverTimestamp().now().toDate()
+        })
+        this.setState({
+            title: '',
+            author: '',
+            storyText: ''
+        })
+    }
+
+    render(){
+        return(
+            <View style={styles.container}>
+                <Header 
+                    backgroundColor = {'pink'}
+                     centerComponent = {{
+                        text : 'Story Hub',
+                        style : { color: 'black', fontSize: 30}
+                    }}
+                />
+                <TextInput 
+                    placeholder="Story Title"
+                    placeholderTextColor='black'
+                    onChangeText= {(text)=>{
+                        this.setState({
+                            title: text
+                        })
+                    }}
+                    value={this.state.title}
+                    style={styles.title}/>
+                <TextInput
+                    placeholder="Author"
+                    placeholderTextColor='black'
+                    onChangeText= {(text)=>{
+                        this.setState({
+                            author: text
+                        })
+                    }}
+                    value={this.state.author}
+                    style={styles.author} />
+                <TextInput 
+                    placeholder="Write your story"
+                    placeholderTextColor='black'
+                    onChangeText= {(text)=>{
+                        this.setState({
+                            storyText: text
+                        })
+                    }}
+                    value={this.state.storyText}
+                    style={styles.storyText}
+                    multiline={true}/>
+                
+                <TouchableOpacity
+                    style={styles.submitButton}
+                    onPress={this.submitStory}
+                   >
+                    <Text style={styles.buttonText}>Submit</Text>
+                </TouchableOpacity>
+            </View>
+        );
+    }
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
+  title:{
+      height: 40,
+      borderWidth: 2,
+      marginTop: 40,
+      margin: 10,
+      color:'black',
+      padding: 6,
+
+  },
+  author: {
+      height: 40,
+      borderWidth: 2,
+      margin: 10,
+       padding: 6,
+  },
+  storyText: {
+      height: 250,
+      borderWidth: 2,
+      margin: 10, 
+      padding: 6,
+  },
+  submitButton:{
+      justifyContent: 'center',
+      alignSelf: 'center',
+      backgroundColor: 'pink',
+      width: 80,
+      height: 40,color:'black',
+  },
+  buttonText: {
+      textAlign: 'center',
+      color: 'white',
+      fontWeight: 'bold',
+      color:'black',
+  }
 });
